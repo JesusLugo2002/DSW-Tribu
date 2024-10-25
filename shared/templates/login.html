@@ -3,5 +3,11 @@
 {% block title %}Login | TRIBU{% endblock title %}
 
 {% block main %}
-    <h1>Hola</h1>
+<h1>Login</h1>
+<form method="post" novalidate>
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Login">
+    <p>No account? <a href="{% url 'signup' %}">Create one</a></p>
+</form>
 {% endblock main %}
