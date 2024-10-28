@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block title %}Logout | TRIBU{% endblock title %}
+
+{% block main %}
+<p>
+    Has cerrado tu sesión satisfactoriamente.
+    Puedes entrar de nuevo <a href="{% url "login" %}">aquí</a>
+</p>
+{% endblock %}

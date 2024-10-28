@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 from shared import views
 
 urlpatterns = [
+    path('', lambda r: redirect('echos/')),
     path('admin/', admin.site.urls),
     path('login/', views.user_login, name="login"),
     path('signup/', views.user_signup, name="signup"),
