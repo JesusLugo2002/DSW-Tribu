@@ -3,26 +3,12 @@
 {% block title %}Login | TRIBU{% endblock title %}
 
 {% block main %}
-    {% if user.is_authenticated %}
-        <p>Ya estás logeado... <a href="/">Ir al inicio</a></p>
-    {% else %}
-        {% if form.errors %}
-            <p>Tu nombre de usuario y contraseña no coinciden. Por favor inténtalo de nuevo.</p>
-        {% endif %}
-        {% if next and next != '/' %}
-            {% if user.is_authenticated %}
-                <p>Tu cuenta no tiene acceso a esta página. Para proceder, por favor haz login con una cuenta que tenga acceso.</p>
-            {% else %}
-                <p>Por favor haz login para ver esta página.</p>
-        {% endif %}
-    {% endif %}
-        <h1>Login</h1>
-        <form method="post" novalidate>
-            {% csrf_token %}
-            {{ form }}
-            <input type="hidden" name="next" value="{{ next }}">
-            <input type="submit" value="Login">
-            <p>No account? <a href="{% url 'signup' %}">Create one</a></p>
-        </form>
-    {% endif %}
+    <h1>Login</h1>
+    <form method="POST" novalidate>
+        {% csrf_token %}
+        {{ form }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <input type="submit" value="Login">
+        <p>No account? <a href="{% url 'signup' %}">Create one</a></p>
+    </form>
 {% endblock main %}

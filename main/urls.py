@@ -22,7 +22,8 @@ from shared import views
 urlpatterns = [
     path('', lambda r: redirect('echos/')),
     path('admin/', admin.site.urls),
-    path('login/', views.user_login, name="login"),
-    path('signup/', views.user_signup, name="signup"),
+    path('login/', views.user_login, name='login'),
+    path('signup/', views.user_signup, name='signup'),
+    path('logout/', views.user_logout, name='logout'),
     path('echos/', include('echos.urls'))
 ]

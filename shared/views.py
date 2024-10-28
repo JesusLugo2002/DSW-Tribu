@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth import login, logout
 from django.shortcuts import render, redirect
-from .forms import LoginForm
+from .forms import LoginForm, SignupForm
 
 # Create your views here.
 def user_login(request):
@@ -17,8 +17,9 @@ def user_login(request):
     return render(request, 'login.html', dict(form=form))
 
 def user_signup(request):
-    if request.method == 'POST':
-        pass
-    else:
-        pass
-    return render(request, 'signup.html')
+    form = SignupForm(request.POST or None)
+    return render(request, 'signup.html', dict(form=form))
+
+def user_logout(request):
+    logout(request)
+    return redirect('login')
