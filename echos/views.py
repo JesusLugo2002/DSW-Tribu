@@ -1,7 +1,8 @@
 from django.shortcuts import render
-from .models import Echo
-from django.http import HttpResponse
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
-def     echos_list(request):
+@login_required
+def echos_list(request):
+
     return render(request, 'echos/echos-list.html')

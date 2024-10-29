@@ -22,8 +22,8 @@
                 </ul>
             </div>
             {% else %}
-            <button type="button" class="btn btn-warning">Sign Up</button>
-            <button type="button" class="btn btn-outline">Login</button>
+            <a class="btn btn-warning" href="{% url "signup" %}">Sign Up</a>
+            <a class="btn btn-warning" href="{% url "login" %}">Login</a>
             {% endif %}
         </div>
       </div>
