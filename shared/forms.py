@@ -8,4 +8,6 @@ class LoginForm(forms.Form):
 class SignupForm(forms.ModelForm):
     class Meta:
         model = get_user_model()
-        fields = ['username', 'first_name', 'last_name', 'email', 'password']
+        fields = ('username', 'first_name', 'last_name', 'email', 'password')
+        widgets = dict(password=forms.PasswordInput)
+        help_texts = dict(username=None)

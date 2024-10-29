@@ -4,5 +4,4 @@ from django.contrib.auth.decorators import login_required
 # Create your views here.
 @login_required
 def echos_list(request):
-
     return render(request, 'echos/echos-list.html')
