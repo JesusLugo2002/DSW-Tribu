@@ -10,3 +10,6 @@ class Echo(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
+
+    def __str__(self) -> str:
+        return f'Echo #{self.id} created by {self.user}'

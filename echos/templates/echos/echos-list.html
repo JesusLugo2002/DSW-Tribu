@@ -3,5 +3,20 @@
 {% block title %}Home | TRIBU{% endblock title %}
 
 {% block main %}
-
+<div class="row mt-3">
+    {% for echo in echos %}
+    <div class="col-sm-6 col-lg-4">
+        <div class="card text-bg-light mb-3">
+            <div class="card-header fs-5">
+                <a href="#">{{ echo.user }}</a>
+            </div>
+            <div class="card-body">
+              <h6 class="card-title">Created at: {{ echo.created_at }}</h6>
+              <p class="card-text">{{ echo.content|truncatewords:20 }}</p>
+              <a class="card-link" href="#">Waves</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 {% endblock main %}
