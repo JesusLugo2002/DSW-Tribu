@@ -9,9 +9,29 @@
             <hr>
             <h5 class="text-secondary">Created at: {{ echo.created_at }}</h5>
             <p>{{ echo.content }}</p>
+            <h5 class="text-secondary">Waves: {{ waves_quantity }}</h5>
             <hr>
             <div id="waves-container">
-                <h2>Waves</h2>
+                <h2 class="my-3">Waves</h2>
+                {% if waves_quantity > 0 %}
+                    {% for wave in waves %}
+                        <div class="card m-2">
+                            <div class="card-header d-flex justify-content-between">
+                                <span>By: <a href="#" class="text-decoration-none">{{ wave.user }}</a></span>
+                                <span>Created at: {{ wave.created_at }}</span>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ wave.content }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if waves_quantity > 5 %}
+                        <a class="btn btn-primary my-3 w-100">All waves</a>
+                    {% endif %}
+                {% else %}
+                    <p>No waves in this echo!</p>
+                {% endif %}
+                
             </div>
         </div>
     </div>

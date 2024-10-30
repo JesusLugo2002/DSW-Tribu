@@ -9,7 +9,7 @@ def user_login(request):
     if form.is_valid():
         username = form.cleaned_data["username"]
         password = form.cleaned_data["password"]
-        if (user := authenticate(request, username=username, password=password)):
+        if user := authenticate(request, username=username, password=password):
             login(request, user)
             return redirect('echos:echos-list')
     return render(request, 'login.html', dict(form=form))
