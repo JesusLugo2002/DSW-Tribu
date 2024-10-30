@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}{{ echo }} | TRIBU{% endblock title %}
+
+{% block main %}
+    <div class="d-flex justify-content-center">
+        <div id="echo-container" class="w-75 mt-3">
+            <h1>Echo created by <a href="#">{{ echo.user }}</a></h1>
+            <hr>
+            <h5 class="text-secondary">Created at: {{ echo.created_at }}</h5>
+            <p>{{ echo.content }}</p>
+            <hr>
+            <div id="waves-container">
+                <h2>Waves</h2>
+            </div>
+        </div>
+    </div>
+{% endblock main %}
+

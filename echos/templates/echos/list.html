@@ -13,7 +13,7 @@
             <div class="card-body">
               <h6 class="card-title">Created at: {{ echo.created_at }}</h6>
               <p class="card-text">{{ echo.content|truncatewords:20 }}</p>
-              <a class="card-link" href="#">Waves</a>
+              <a class="card-link" href="{% url "echos:echo-detail" echo.id %}">Details</a>
             </div>
         </div>
     </div>

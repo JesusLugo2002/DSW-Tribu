@@ -3,7 +3,7 @@ from django.conf import settings
 
 # Create your models here.
 class Echo(models.Model):
-    content = models.TextField(max_length=500)
+    content = models.TextField(max_length=1000)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(
@@ -12,4 +12,4 @@ class Echo(models.Model):
     )
 
     def __str__(self) -> str:
-        return f'Echo #{self.id} created by {self.user}'
+        return f'Echo by {self.user}'
