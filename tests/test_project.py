@@ -1,4 +1,5 @@
 import datetime
+import re
 from functools import partial
 
 import pytest
@@ -167,25 +168,78 @@ def test_echo_list(client: Client, user, fake):
 @pytest.mark.django_db
 def test_echo_detail(client: Client, echo, user, fake):
     TARGET_URL = f'/echos/{echo.pk}/'
+    ALL_WAVES_URL = f'/echos/{echo.pk}/waves/'
 
     response = client.get(TARGET_URL, follow=True)
     assertRedirects(response, f'/login/?next={TARGET_URL}')
     client.force_login(user)
+
+    # Test with 10 waves
     waves = baker.make(
         Wave,
         _quantity=10,
         echo=echo,
         content=partial(fake.paragraph, nb_sentences=10),
         created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
-        _fill_optional=True,
     )
     response = client.get(TARGET_URL)
     assert response.status_code == 200
     assertContains(response, echo.content, count=1)
     assertContains(response, echo.user.username)
-    for wave in waves[:5]:
+    assertContains(response, ALL_WAVES_URL)
+    sliced_waves = waves[:5]
+    for wave in sliced_waves:
         assertContains(response, wave.content, count=1)
         assertContains(response, wave.user.username)
+
+    # Check if waves are sorted in the right way
+    assert list(response.context['waves']) == sliced_waves
+
+    # Test with 2 waves
+    Wave.objects.filter(pk__in=[wave.pk for wave in waves]).delete()
+    waves = baker.make(
+        Wave,
+        _quantity=2,
+        echo=echo,
+        content=partial(fake.paragraph, nb_sentences=10),
+        created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
+    )
+    response = client.get(TARGET_URL)
+    assert response.status_code == 200
+    assertContains(response, echo.content, count=1)
+    assertContains(response, echo.user.username)
+    assert re.search(rf'"{ALL_WAVES_URL}"', str(response.content)) is None
+    for wave in waves:
+        assertContains(response, wave.content, count=1)
+        assertContains(response, wave.user.username)
+
+
+@pytest.mark.django_db
+def test_echo_waves(client: Client, echo, user, fake):
+    TARGET_URL = f'/echos/{echo.pk}/waves/'
+
+    response = client.get(TARGET_URL, follow=True)
+    assertRedirects(response, f'/login/?next={TARGET_URL}')
+    client.force_login(user)
+
+    # Test with 10 waves
+    waves = baker.make(
+        Wave,
+        _quantity=10,
+        echo=echo,
+        content=partial(fake.paragraph, nb_sentences=10),
+        created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
+    )
+    response = client.get(TARGET_URL)
+    assert response.status_code == 200
+    assertContains(response, echo.content, count=1)
+    assertContains(response, echo.user.username)
+    for wave in waves:
+        assertContains(response, wave.content, count=1)
+        assertContains(response, wave.user.username)
+
+    # Check if waves are sorted in the right way
+    assert list(response.context['waves']) == waves
 
 
 @pytest.mark.django_db
@@ -392,14 +446,21 @@ def test_user_detail(client: Client, user, django_user_model):
     assertContains(response, another_user.first_name)
     assertContains(response, another_user.last_name)
     assertContains(response, another_user.email)
-    for echo in echos[:5]:
+    sliced_echos = echos[:5]
+    for echo in sliced_echos:
         assertContains(response, echo.content, count=1)
+
+    # Check if echos are sorted in the right way
+    assert list(response.context['echos']) == sliced_echos
 
     # Test user detail with ALL echos
     response = client.get(TARGET_URL + 'echos/', follow=True)
     assert response.status_code == 200
     for echo in echos:
         assertContains(response, echo.content, count=1)
+
+    # Check if echos are sorted in the right way
+    assert list(response.context['echos']) == echos
 
 
 @pytest.mark.django_db

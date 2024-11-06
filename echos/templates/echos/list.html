@@ -11,7 +11,7 @@
                 <a href="#">{{ echo.user }}</a>
             </div>
             <div class="card-body">
-              <h6 class="card-title">Created at: {{ echo.created_at }}</h6>
+              <h6 class="card-title">Created at: {{ echo.created_at|timesince }}</h6>
               <p class="card-text">{{ echo.content|truncatewords:20 }}</p>
               <a class="card-link" href="{% url "echos:echo-detail" echo.id %}">Details</a>
             </div>
