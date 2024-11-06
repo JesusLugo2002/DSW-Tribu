@@ -14,6 +14,7 @@
         <div class="text-end">
             {% if user.is_authenticated %}
             <div class="btn-group">
+                <a class="btn btn-outline-warning" href="{% url "echos:echo-add" %}">Create echo</a>
                 <button type="button" class="btn btn-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                 My Profile
                 </button>

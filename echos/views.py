@@ -1,7 +1,8 @@
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
+from .forms import AddEchoForm
 from .models import Echo
 
 
@@ -10,6 +11,17 @@ from .models import Echo
 def echos_list(request):
     echos = Echo.objects.all()
     return render(request, 'echos/list.html', dict(echos=echos))
+
+
+@login_required
+def echo_add(request):
+    form = AddEchoForm(request.POST or None)
+    if form.is_valid():
+        echo = form.save(commit=False)
+        echo.user = request.user
+        echo.save()
+        return redirect('echos:echo-list')
+    return render(request, 'echos/add.html', dict(form=form))
 
 
 @login_required
@@ -25,6 +37,7 @@ def echo_detail(request, echo_pk):
     )
 
 
+@login_required
 def echo_waves(request, echo_pk):
     echo = Echo.objects.get(pk=echo_pk)
     waves = echo.waves.all()
