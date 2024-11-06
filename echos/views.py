@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import redirect, render
 
-from .forms import AddEchoForm
+from .forms import AddEchoForm, EditEchoForm
 from .models import Echo
 
 
@@ -49,7 +49,12 @@ def echo_waves(request, echo_pk):
 
 
 def echo_edit(request, echo_pk):
-    return HttpResponse('Work in progress')
+    echo = Echo.objects.get(pk=echo_pk)
+    form = EditEchoForm(request.POST or None, instance=echo)
+    if form.is_valid():
+        echo = form.save()
+        return redirect('echos:echo-list')
+    return render(request, 'echos/echo/edit.html', dict(form=form))
 
 
 def echo_delete(request, echo_pk):

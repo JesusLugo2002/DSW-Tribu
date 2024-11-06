@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Editing echo | TRIBU{% endblock title %}
+
+{% block main %}
+<div class="container m-3">
+  <h1>Editing echo</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Edit echo">
+  </form>
+</div>
+{% endblock main %}
