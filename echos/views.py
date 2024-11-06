@@ -2,8 +2,6 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 from django.shortcuts import render
 
-from waves.models import Wave
-
 from .models import Echo
 
 
@@ -17,7 +15,7 @@ def echos_list(request):
 @login_required
 def echo_detail(request, echo_pk):
     echo = Echo.objects.get(pk=echo_pk)
-    waves = Wave.objects.filter(echo=echo)
+    waves = echo.waves.all()
     last_waves = waves[:5]
     waves_quantity = len(waves)
     return render(
@@ -28,7 +26,13 @@ def echo_detail(request, echo_pk):
 
 
 def echo_waves(request, echo_pk):
-    return HttpResponse('Work in progress')
+    echo = Echo.objects.get(pk=echo_pk)
+    waves = echo.waves.all()
+    return render(
+        request,
+        'echos/echo/waves.html',
+        dict(echo=echo, waves=waves),
+    )
 
 
 def echo_edit(request, echo_pk):
