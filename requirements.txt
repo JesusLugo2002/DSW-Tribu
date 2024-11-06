@@ -1,0 +1,5 @@
+django
+pytest-django
+model-bakery
+ipython
+faker
