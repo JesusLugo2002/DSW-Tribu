@@ -11,5 +11,5 @@ urlpatterns = [
     path('<int:echo_pk>/waves/', views.echo_waves, name='echo-waves'),
     path('<int:echo_pk>/edit/', views.echo_edit, name='echo-edit'),
     path('<int:echo_pk>/delete/', views.echo_delete, name='echo-delete'),
-    path('<int:echo_pk>/waves/add', views.echo_wave_add, name='echo-wave-add'),
+    path('<int:echo_pk>/waves/add/', views.echo_wave_add, name='echo-wave-add'),
 ]

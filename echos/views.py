@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import redirect, render
 
-from .forms import AddEchoForm, EditEchoForm
+from .forms import AddEchoForm, EditEchoForm, AddWaveForm
 from .models import Echo
 
 
@@ -66,5 +66,14 @@ def echo_delete(request, echo_pk):
     echo.delete()
     return redirect('echos:echo-list')
 
+@login_required
 def echo_wave_add(request, echo_pk):
-    pass
+    form = AddWaveForm(request.POST or None)
+    echo = Echo.objects.get(pk=echo_pk)
+    if form.is_valid():
+        wave = form.save(commit=False)
+        wave.user = request.user
+        wave.echo = echo
+        wave.save()
+        return redirect('echos:echo-list')
+    return render(request, 'echos/echo/add-wave.html', dict(form=form))
