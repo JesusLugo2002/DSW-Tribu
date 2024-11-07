@@ -47,7 +47,7 @@ def echo_waves(request, echo_pk):
         dict(echo=echo, waves=waves),
     )
 
-
+@login_required
 def echo_edit(request, echo_pk):
     echo = Echo.objects.get(pk=echo_pk)
     form = EditEchoForm(request.POST or None, instance=echo)
@@ -56,10 +56,11 @@ def echo_edit(request, echo_pk):
         return redirect('echos:echo-list')
     return render(request, 'echos/echo/edit.html', dict(form=form))
 
-
+@login_required
 def echo_delete(request, echo_pk):
-    return HttpResponse('Work in progress')
-
+    echo = Echo.objects.get(pk=echo_pk)
+    echo.delete()
+    return redirect('echos:echo-list')
 
 def echo_wave_add(request, echo_pk):
     return HttpResponse('Work in progress')
