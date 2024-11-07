@@ -11,19 +11,26 @@
         <li><a href="{% url "echos:echo-list" %}" class="nav-link px-2 link-secondary">Echoes</a></li>
         <li><a href="{% url "users:user-list" %}" class="nav-link px-2 link-body-emphasis">Users</a></li>
       </ul>
+      
+      {% if user.is_authenticated %}
+        <a class="btn btn-outline-primary mx-3" href="{% url "echos:echo-add" %}">Create an echo</a>
 
-      <a class="btn btn-outline-primary mx-3" href="{% url "echos:echo-add" %}">Create an echo</a>
-
-      <div class="dropdown text-end">
-        <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-          <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
-        </a>
-        <ul class="dropdown-menu text-small">
-          <li><a class="dropdown-item" href="#">My profile</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" href="{% url "logout" %}">Sign out</a></li>
-        </ul>
+        <div class="dropdown text-end">
+          <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            <img src="https://github.com/mdo.png" alt="mdo" width="32" height="32" class="rounded-circle">
+          </a>
+          <ul class="dropdown-menu text-small">
+            <li><a class="dropdown-item" href="#">My profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item" href="{% url "logout" %}">Sign out</a></li>
+          </ul>
+        </div>
+      {% else %}
+      <div>
+        <a class="btn btn-outline-primary" href="{% url "login" %}">Log in</a>
+        <a class="btn btn-outline-primary" href="{% url "signup" %}">Sign up</a>
       </div>
+      {% endif %}
     </div>
   </div>
 </header>
