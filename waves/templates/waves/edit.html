@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Editing wave | TRIBU{% endblock title %}
+
+{% block main %}
+<div class="container m-3">
+  <h1>Editing wave</h1>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Edit wave">
+  </form>
+</div>
+{% endblock main %}
