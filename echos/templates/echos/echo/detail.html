@@ -6,7 +6,7 @@
     <div class="d-flex justify-content-center">
         <div id="echo-container" class="w-75 mt-3 container">
             <div class="d-flex justify-content-between align-middle">
-                <span class="fs-2">Echo created by <a href="#">{{ echo.user }}</a></span>
+                <span class="fs-2">Echo created by <a href="{% url "users:user-detail" echo.user %}">{{ echo.user }}</a></span>
                 {% if user == echo.user %}
                 <span>
                     <a href="{% url "echos:echo-edit" echo.pk %}" class="text-reset m-1">
