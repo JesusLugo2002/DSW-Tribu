@@ -5,7 +5,6 @@ from django.contrib.auth.decorators import login_required
 from .forms import EditWaveForm
 from .models import Wave
 
-# Create your views here.
 @login_required
 def wave_edit(request, wave_pk):
     wave = Wave.objects.get(pk=wave_pk)
