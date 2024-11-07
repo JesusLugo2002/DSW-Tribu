@@ -13,7 +13,7 @@ def user_login(request):
         if user := authenticate(request, username=username, password=password):
             login(request, user)
             return redirect('echos:echo-list')
-    return render(request, 'login.html', dict(form=form))
+    return render(request, 'accounts/login.html', dict(form=form))
 
 
 def user_signup(request):
@@ -24,7 +24,7 @@ def user_signup(request):
         user.save()
         login(request, user)
         return redirect('echos:echo-list')
-    return render(request, 'signup.html', dict(form=form))
+    return render(request, 'accounts/signup.html', dict(form=form))
 
 
 def user_logout(request):
