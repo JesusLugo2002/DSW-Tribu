@@ -5,5 +5,5 @@ from django.db import models
 # Create your models here.
 class Profile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    avatar = models.ImageField(blank=True, null=True, upload_to='uploads')
+    avatar = models.ImageField(blank=True, null=True, upload_to='avatars', default="avatars/noavatar.png")
     bio = models.TextField(blank=True)
