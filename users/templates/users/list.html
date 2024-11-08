@@ -8,7 +8,7 @@
         {% for user in users %}
         <a class="list-group-item list-group-item-action" href="{% url "users:user-detail" user %}">
             <div>
-                <img src="" alt="">
+                <img src="{{ user.profile.avatar.url }}" width="32" class="mx-3">
                 {{ user }}
             </div>
         </a>

@@ -1,6 +1,8 @@
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import redirect, render
 
+from users.models import Profile
+
 from .forms import LoginForm, SignupForm
 
 
@@ -22,6 +24,8 @@ def user_signup(request):
         user = form.save(commit=False)
         user.set_password(form.cleaned_data['password'])
         user.save()
+        new_profile = Profile(user=user)
+        new_profile.save()
         login(request, user)
         return redirect('echos:echo-list')
     return render(request, 'accounts/signup.html', dict(form=form))
