@@ -1,23 +1,38 @@
-import datetime
+import io
 import re
+import shutil
 from functools import partial
 
 import pytest
 from django.conf import settings
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.template.defaultfilters import truncatewords
-from django.test import Client
 from faker import Faker
 from model_bakery import baker
-from model_bakery.utils import seq
+from PIL import Image
 from pytest_django.asserts import assertContains, assertRedirects
 
 from echos.models import Echo
+from users.models import Profile
 from waves.models import Wave
+
+# ==============================================================================
+# FIXTURES
+# ==============================================================================
 
 
 @pytest.fixture
 def user(django_user_model):
-    return baker.make(django_user_model, _fill_optional=True)
+    u = baker.make(django_user_model, _fill_optional=True)
+    baker.make(Profile, user=u, _fill_optional=True)
+    return u
+
+
+@pytest.fixture
+def another_user(django_user_model):
+    u = baker.make(django_user_model, _fill_optional=True)
+    baker.make(Profile, user=u, _fill_optional=True)
+    return u
 
 
 @pytest.fixture
@@ -35,32 +50,71 @@ def fake():
     return Faker()
 
 
+@pytest.fixture
+def image():
+    img = Image.new('RGBA', size=(200, 200), color='white')
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    return SimpleUploadedFile(
+        name='test_image.png',
+        content=buffer.getvalue(),
+        content_type='image/png',
+    )
+
+
+@pytest.fixture
+def uploads_folder(settings):
+    settings.MEDIA_ROOT = settings.BASE_DIR / 'tests/uploads/'
+    uploads_folder = settings.MEDIA_ROOT
+    uploads_folder.mkdir(parents=True, exist_ok=True)
+    yield
+    shutil.rmtree(uploads_folder, ignore_errors=True)
+
+
+# ==============================================================================
+# TESTS
+# ==============================================================================
+
+
 @pytest.mark.django_db
-def test_echo_model_has_proper_fields(client: Client, echo):
+def test_echo_models_has_proper_fields(echo):
     PROPER_FIELDS = ('content', 'created_at', 'updated_at', 'user')
     for field in PROPER_FIELDS:
-        assert getattr(echo, field) is not None
+        assert getattr(echo, field) is not None, f'El campo <{field}> no está en el modelo Echo.'
 
 
 @pytest.mark.django_db
-def test_wave_model_has_proper_fields(client: Client, wave):
+def test_wave_model_has_proper_fields(wave):
     PROPER_FIELDS = ('content', 'created_at', 'updated_at', 'user', 'echo')
     for field in PROPER_FIELDS:
-        assert getattr(wave, field) is not None
+        assert getattr(wave, field) is not None, f'El campo <{field}> no está en el modelo Wave.'
+
+
+@pytest.mark.django_db
+def test_profile_model_has_proper_fields(user):
+    PROPER_FIELDS = ('avatar', 'bio')
+    for field in PROPER_FIELDS:
+        assert (
+            getattr(user.profile, field) is not None
+        ), f'El campo <{field}> no está en el modelo Profile.'
 
 
 def test_required_apps_are_installed():
     PROPER_APPS = ('shared', 'echos', 'waves', 'accounts', 'users')
 
     custom_apps = [app for app in settings.INSTALLED_APPS if not app.startswith('django')]
-    assert len(custom_apps) == len(PROPER_APPS)
     for app in PROPER_APPS:
         app_config = f'{app}.apps.{app.title()}Config'
-        assert app_config in custom_apps
+        assert (
+            app_config in custom_apps
+        ), f'La aplicación <{app}> no está "creada/instalada" en el proyecto.'
+    assert len(custom_apps) == len(
+        PROPER_APPS
+    ), 'El número de aplicaciones propias definidas en el proyecto no es correcto.'
 
 
 @pytest.mark.django_db
-def test_login(client: Client, django_user_model):
+def test_login(client, django_user_model):
     USERNAME = 'pytest'
     PASSWORD = 'pwtest'
 
@@ -81,15 +135,15 @@ def test_login(client: Client, django_user_model):
 
 
 @pytest.mark.django_db
-def test_logout(client: Client, user):
+def test_logout(client, user):
     client.force_login(user)
     client.get('/logout/')
     # https://stackoverflow.com/a/6013115
-    assert '_auth_user_id' not in client.session
+    assert '_auth_user_id' not in client.session, 'El usuario sigue logeado tras hacer "logout".'
 
 
 @pytest.mark.django_db
-def test_signup(client: Client, fake, user):
+def test_signup(client, fake, user):
     SIGNUP_DATA = {
         'username': fake.user_name(),
         'password': fake.password(),
@@ -135,7 +189,7 @@ def test_signup(client: Client, fake, user):
 
 
 @pytest.mark.django_db
-def test_root_url_redirects_to_echo_list(client: Client, user):
+def test_root_url_redirects_to_echo_list(client, user):
     response = client.get('/', follow=True)
     assertRedirects(response, '/login/?next=/echos/')
     client.force_login(user)
@@ -144,18 +198,22 @@ def test_root_url_redirects_to_echo_list(client: Client, user):
 
 
 @pytest.mark.django_db
-def test_echo_list(client: Client, user, fake):
+def test_echo_list(client, user, fake):
     TARGET_URL = '/echos/'
     DETAIL_URL = '/echos/{pk}/'
 
     response = client.get(TARGET_URL, follow=True)
     assertRedirects(response, f'/login/?next={TARGET_URL}')
     client.force_login(user)
-    echos = baker.make(
-        Echo,
-        _quantity=10,
-        content=partial(fake.paragraph, nb_sentences=10),
-        _fill_optional=True,
+    echos = list(
+        reversed(
+            baker.make(
+                Echo,
+                _quantity=10,
+                content=partial(fake.paragraph, nb_sentences=10),
+                _fill_optional=True,
+            )
+        )
     )
     response = client.get(TARGET_URL)
     assert response.status_code == 200
@@ -164,9 +222,14 @@ def test_echo_list(client: Client, user, fake):
         assertContains(response, echo.user.username)
         assertContains(response, DETAIL_URL.format(pk=echo.pk))
 
+    # Check if echos are sorted in the right way
+    assert (
+        list(response.context['echos']) == echos
+    ), 'El listado de "echos" no coincide con el que se esperaría.'
+
 
 @pytest.mark.django_db
-def test_echo_detail(client: Client, echo, user, fake):
+def test_echo_detail(client, echo, user, fake):
     TARGET_URL = f'/echos/{echo.pk}/'
     ALL_WAVES_URL = f'/echos/{echo.pk}/waves/'
 
@@ -175,12 +238,15 @@ def test_echo_detail(client: Client, echo, user, fake):
     client.force_login(user)
 
     # Test with 10 waves
-    waves = baker.make(
-        Wave,
-        _quantity=10,
-        echo=echo,
-        content=partial(fake.paragraph, nb_sentences=10),
-        created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
+    waves = list(
+        reversed(
+            baker.make(
+                Wave,
+                _quantity=10,
+                echo=echo,
+                content=partial(fake.paragraph, nb_sentences=10),
+            )
+        )
     )
     response = client.get(TARGET_URL)
     assert response.status_code == 200
@@ -193,29 +259,41 @@ def test_echo_detail(client: Client, echo, user, fake):
         assertContains(response, wave.user.username)
 
     # Check if waves are sorted in the right way
-    assert list(response.context['waves']) == sliced_waves
+    assert (
+        list(response.context['waves']) == sliced_waves
+    ), 'El listado de "waves" no coincide con el que se esperaría.'
 
     # Test with 2 waves
     Wave.objects.filter(pk__in=[wave.pk for wave in waves]).delete()
-    waves = baker.make(
-        Wave,
-        _quantity=2,
-        echo=echo,
-        content=partial(fake.paragraph, nb_sentences=10),
-        created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
+    waves = list(
+        reversed(
+            baker.make(
+                Wave,
+                _quantity=2,
+                echo=echo,
+                content=partial(fake.paragraph, nb_sentences=10),
+            )
+        )
     )
     response = client.get(TARGET_URL)
     assert response.status_code == 200
     assertContains(response, echo.content, count=1)
     assertContains(response, echo.user.username)
-    assert re.search(rf'"{ALL_WAVES_URL}"', str(response.content)) is None
+    assert (
+        re.search(rf'"{ALL_WAVES_URL}"', str(response.content)) is None
+    ), 'Aparece el botón de ver más "waves" cuando no debería porque ya estamos viendo todos los "waves".'
     for wave in waves:
         assertContains(response, wave.content, count=1)
         assertContains(response, wave.user.username)
 
+    # Check if waves are sorted in the right way
+    assert (
+        list(response.context['waves']) == waves
+    ), 'El listado de "waves" no coincide con el que se esperaría.'
+
 
 @pytest.mark.django_db
-def test_echo_waves(client: Client, echo, user, fake):
+def test_echo_waves(client, echo, user, fake):
     TARGET_URL = f'/echos/{echo.pk}/waves/'
 
     response = client.get(TARGET_URL, follow=True)
@@ -223,12 +301,15 @@ def test_echo_waves(client: Client, echo, user, fake):
     client.force_login(user)
 
     # Test with 10 waves
-    waves = baker.make(
-        Wave,
-        _quantity=10,
-        echo=echo,
-        content=partial(fake.paragraph, nb_sentences=10),
-        created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
+    waves = list(
+        reversed(
+            baker.make(
+                Wave,
+                echo=echo,
+                content=lambda: fake.paragraph(10),
+                _quantity=10,
+            )
+        )
     )
     response = client.get(TARGET_URL)
     assert response.status_code == 200
@@ -239,11 +320,13 @@ def test_echo_waves(client: Client, echo, user, fake):
         assertContains(response, wave.user.username)
 
     # Check if waves are sorted in the right way
-    assert list(response.context['waves']) == waves
+    assert (
+        list(response.context['waves']) == waves
+    ), 'El listado de "waves" no coincide con el que se esperaría.'
 
 
 @pytest.mark.django_db
-def test_add_echo(client: Client, user):
+def test_add_echo(client, user):
     TARGET_URL = '/echos/add/'
     ECHO_CONTENT = 'pytest'
 
@@ -265,11 +348,13 @@ def test_add_echo(client: Client, user):
     echo = Echo.objects.latest('pk')
     assert echo.user == user
     assert echo.content == ECHO_CONTENT
-    assert echo.updated_at >= echo.created_at
+    assert (
+        echo.updated_at >= echo.created_at
+    ), 'La fecha de actualización de un "echo" debe ser mayor que su fecha de creación.'
 
 
 @pytest.mark.django_db
-def test_edit_echo(client: Client, echo, django_user_model):
+def test_edit_echo(client, echo, django_user_model):
     TARGET_URL = f'/echos/{echo.pk}/edit/'
     ECHO_CONTENT = 'pytest'
 
@@ -295,11 +380,13 @@ def test_edit_echo(client: Client, echo, django_user_model):
     edited_echo = Echo.objects.get(pk=echo.pk)
     assert edited_echo.user == echo.user
     assert edited_echo.content == ECHO_CONTENT
-    assert edited_echo.updated_at >= echo.created_at
+    assert (
+        edited_echo.updated_at >= echo.created_at
+    ), 'La fecha de actualización de un "echo" debe ser mayor que su fecha de creación.'
 
 
 @pytest.mark.django_db
-def test_delete_echo(client: Client, echo, django_user_model):
+def test_delete_echo(client, echo, django_user_model):
     TARGET_URL = f'/echos/{echo.pk}/delete/'
 
     # Test NO AUTH request
@@ -312,7 +399,7 @@ def test_delete_echo(client: Client, echo, django_user_model):
     response = client.get(TARGET_URL, follow=True)
     assert response.status_code == 403
     echo = Echo.objects.get(pk=echo.pk)
-    assert echo is not None
+    assert echo is not None, 'El "echo" no se ha borrado tras la petición.'
 
     # Test delete echo with echo owner
     client.force_login(echo.user)
@@ -323,7 +410,7 @@ def test_delete_echo(client: Client, echo, django_user_model):
 
 
 @pytest.mark.django_db
-def test_add_wave(client: Client, echo, user):
+def test_add_wave(client, echo, user):
     TARGET_URL = f'/echos/{echo.pk}/waves/add/'
     WAVE_CONTENT = 'pytest'
 
@@ -346,11 +433,13 @@ def test_add_wave(client: Client, echo, user):
     assert wave.echo == echo
     assert wave.user == user
     assert wave.content == WAVE_CONTENT
-    assert wave.updated_at >= wave.created_at
+    assert (
+        wave.updated_at >= wave.created_at
+    ), 'La fecha de actualización de un "wave" debe ser mayor que su fecha de creación.'
 
 
 @pytest.mark.django_db
-def test_edit_wave(client: Client, wave, django_user_model):
+def test_edit_wave(client, wave, django_user_model):
     TARGET_URL = f'/waves/{wave.pk}/edit/'
     WAVE_CONTENT = 'pytest'
 
@@ -377,11 +466,13 @@ def test_edit_wave(client: Client, wave, django_user_model):
     assert edited_wave.echo == wave.echo
     assert edited_wave.user == wave.user
     assert edited_wave.content == WAVE_CONTENT
-    assert edited_wave.updated_at >= edited_wave.created_at
+    assert (
+        edited_wave.updated_at >= edited_wave.created_at
+    ), 'La fecha de actualización de un "wave" debe ser mayor que su fecha de creación.'
 
 
 @pytest.mark.django_db
-def test_delete_wave(client: Client, wave, django_user_model):
+def test_delete_wave(client, wave, django_user_model):
     TARGET_URL = f'/waves/{wave.pk}/delete/'
 
     # Test NO AUTH request
@@ -394,7 +485,7 @@ def test_delete_wave(client: Client, wave, django_user_model):
     response = client.get(TARGET_URL, follow=True)
     assert response.status_code == 403
     echo = Wave.objects.get(pk=wave.pk)
-    assert echo is not None
+    assert echo is not None, 'El "wave" no se ha borrado tras la petición.'
 
     # Test delete echo with echo owner
     client.force_login(wave.user)
@@ -405,7 +496,7 @@ def test_delete_wave(client: Client, wave, django_user_model):
 
 
 @pytest.mark.django_db
-def test_user_list(client: Client, user, django_user_model):
+def test_user_list(client, user, django_user_model):
     TARGET_URL = '/users/'
     USER_DETAIL_URL = '/{username}/'
 
@@ -424,7 +515,7 @@ def test_user_list(client: Client, user, django_user_model):
 
 
 @pytest.mark.django_db
-def test_user_detail(client: Client, user, django_user_model):
+def test_user_detail(client, user, django_user_model):
     another_user = baker.make(django_user_model)
     TARGET_URL = f'/users/{another_user}/'
 
@@ -434,11 +525,14 @@ def test_user_detail(client: Client, user, django_user_model):
 
     # Test AUTH request
     client.force_login(user)
-    echos = baker.make(
-        Echo,
-        user=another_user,
-        created_at=seq(datetime.datetime.now(), increment_by=datetime.timedelta(days=-1)),
-        _quantity=10,
+    echos = list(
+        reversed(
+            baker.make(
+                Echo,
+                user=another_user,
+                _quantity=10,
+            )
+        )
     )
     response = client.get(TARGET_URL, follow=True)
     assert response.status_code == 200
@@ -451,7 +545,9 @@ def test_user_detail(client: Client, user, django_user_model):
         assertContains(response, echo.content, count=1)
 
     # Check if echos are sorted in the right way
-    assert list(response.context['echos']) == sliced_echos
+    assert (
+        list(response.context['echos']) == sliced_echos
+    ), 'El listado de "echos" no coincide con el esperado.'
 
     # Test user detail with ALL echos
     response = client.get(TARGET_URL + 'echos/', follow=True)
@@ -460,11 +556,13 @@ def test_user_detail(client: Client, user, django_user_model):
         assertContains(response, echo.content, count=1)
 
     # Check if echos are sorted in the right way
-    assert list(response.context['echos']) == echos
+    assert (
+        list(response.context['echos']) == echos
+    ), 'El listado de "echos" no coincide con el esperado.'
 
 
 @pytest.mark.django_db
-def test_my_user_detail(client: Client, user):
+def test_my_user_detail(client, user):
     TARGET_URL = '/users/@me/'
 
     # Test NO AUTH request
@@ -477,9 +575,113 @@ def test_my_user_detail(client: Client, user):
 
 
 @pytest.mark.django_db
-def test_models_are_available_on_admin(admin_client: Client):
-    ADMIN_URLS = ['/admin/echos/echo/', '/admin/waves/wave/']
+def test_profile_appears_in_user_detail(client, user):
+    TARGET_URL = f'/users/{user}/'
+    client.force_login(user)
+    response = client.get(TARGET_URL)
+    assertContains(response, user.profile.bio)
+    assertContains(response, user.profile.avatar.url)
 
-    for url in ADMIN_URLS:
+
+@pytest.mark.django_db
+def test_profile_appears_in_user_echos(client, user):
+    TARGET_URL = f'/users/{user}/echos/'
+    client.force_login(user)
+    response = client.get(TARGET_URL)
+    assertContains(response, user.profile.bio)
+    assertContains(response, user.profile.avatar.url)
+
+
+@pytest.mark.django_db
+def test_edit_profile_link_existence_in_user_detail(client, user, another_user):
+    client.force_login(user)
+
+    # Test if profile edit link appears on another user
+    TARGET_URL = f'/users/{another_user}/'
+    EDIT_PROFILE_URL = f'/users/{another_user}/edit/'
+    response = client.get(TARGET_URL)
+    assert (
+        re.search(rf'"{EDIT_PROFILE_URL}"', str(response.content)) is None
+    ), 'Aparece el botón de editar perfil cuando accedes a un usuario que no es el que está logeado.'
+
+    # Test if profile edit link does not appear on logged user
+    TARGET_URL = f'/users/{user}/'
+    EDIT_PROFILE_URL = f'/users/{user}/edit/'
+    response = client.get(TARGET_URL)
+    assert (
+        re.search(rf'"{EDIT_PROFILE_URL}"', str(response.content)) is not None
+    ), 'No aparece el botón de editar perfil cuando accedes al detalle del usuario logeado.'
+
+
+@pytest.mark.django_db
+def test_edit_profile_link_existence_in_user_echos(client, user, another_user):
+    client.force_login(user)
+
+    # Test if profile edit link appears on another user
+    TARGET_URL = f'/users/{another_user}/echos/'
+    EDIT_PROFILE_URL = f'/users/{another_user}/edit/'
+    response = client.get(TARGET_URL)
+    assert (
+        re.search(rf'"{EDIT_PROFILE_URL}"', str(response.content)) is None
+    ), 'Aparece el botón de editar perfil cuando accedes a la lista de "echos" de un usuario que no es el que está logeado.'
+
+    # Test if profile edit link does not appear on logged user
+    TARGET_URL = f'/users/{user}/echos/'
+    EDIT_PROFILE_URL = f'/users/{user}/edit/'
+    response = client.get(TARGET_URL)
+    assert (
+        re.search(rf'"{EDIT_PROFILE_URL}"', str(response.content)) is not None
+    ), 'No aparece el botón de editar perfil cuando accedes a la lista de "echos" de un usuario logeado.'
+
+
+def test_edit_profile_with_get_request(client, user):
+    TARGET_URL = f'/users/{user}/edit/'
+
+    # Test NO AUTH request
+    response = client.get(TARGET_URL, follow=True)
+    assertRedirects(response, f'/login/?next={TARGET_URL}')
+
+    # Test AUTH request
+    client.force_login(user)
+    response = client.get(TARGET_URL)
+    assertContains(response, user.profile.avatar.url)
+    assertContains(response, user.profile.bio)
+
+
+def test_edit_profile_with_post_request(client, user, image, uploads_folder):  # noqa
+    TARGET_URL = f'/users/{user}/edit/'
+    EDITED_BIO = 'pytest'
+
+    # Test NO AUTH request
+    response = client.post(TARGET_URL)
+    assertRedirects(response, f'/login/?next={TARGET_URL}')
+
+    # Test AUTH request
+    client.force_login(user)
+    payload = dict(bio=EDITED_BIO, avatar=image)
+    response = client.post(TARGET_URL, payload, follow=True)
+    assert response.status_code == 200
+    profile = Profile.objects.get(user=user)
+    assert profile.bio == EDITED_BIO
+    assert (
+        profile.avatar.size == image.size
+    ), 'La imagen de avatar que se ha subido no se ha guardado correctamente en el perfil.'
+
+
+@pytest.mark.django_db
+def test_edit_profile_fails_when_no_owner(client, user, another_user):
+    TARGET_URL = f'/users/{another_user}/edit/'
+    client.force_login(user)
+    response = client.get(TARGET_URL)
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_models_are_available_on_admin(admin_client):
+    MODELS = ('echos.Echo', 'waves.Wave', 'users.Profile')
+
+    for model in MODELS:
+        url_model_path = model.replace('.', '/').lower()
+        url = f'/admin/{url_model_path}/'
         response = admin_client.get(url)
-        assert response.status_code == 200
+        assert response.status_code == 200, f'El modelo <{model}> no está habilitado en el admin.'

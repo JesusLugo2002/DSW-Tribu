@@ -4,16 +4,14 @@
 
 {% block main %}
     {% include "users/hero.html" %}
-    <div class="row row-cols-3 g-4">
-    {% for user in users %}
-        <div class="col">
-            <div class="card">
-                <img src="" class="card-img-top" alt="">
-                <div class="card-body">
-                    <h5 class="card-title"><a href="{% url "users:user-detail" user %}">{{ user }}</a></h5>
-                </div>
+    <ul class="list-group list-group-flush mb-5">
+        {% for user in users %}
+        <a class="list-group-item list-group-item-action" href="{% url "users:user-detail" user %}">
+            <div>
+                <img src="" alt="">
+                {{ user }}
             </div>
-            </div>
-        </div>
+        </a>
     {% endfor %}
+    </ul>
 {% endblock main %}

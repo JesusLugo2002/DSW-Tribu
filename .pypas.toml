@@ -6,5 +6,5 @@ bundle = [
     "requirements.txt",
     "justfile",
     "pytest.ini",
+    "media/avatars/noavatar.png",
 ]
-todo = ["main.py"]
