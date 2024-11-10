@@ -3,7 +3,9 @@
 {% block title %}{{ other_user }} | TRIBU{% endblock title %}
 
 {% block main %}
-  <h1>{{ other_user }}</h1>
+  
+    {% include "./profile-card.html" %}
+
   <h2>Echos</h2>
   {% for echo in echos %}
     <div class="card m-2">
