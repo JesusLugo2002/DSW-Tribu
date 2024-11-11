@@ -1,5 +1,4 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponseForbidden
 from django.contrib.auth.decorators import login_required
 from shared.utils import assert_owner_of
 
