@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden
 
 from .models import Profile
 from .forms import EditProfileForm
@@ -41,10 +41,13 @@ def user_edit(request, username):
     if request.user.username != username:
         return HttpResponseForbidden("You can not edit another user profile!")
     user_profile = Profile.objects.get(user=request.user)
-    form = EditProfileForm(request.POST or None, instance=user_profile)
-    if form.is_valid():
-        profile = form.save(commit=False)
-        profile.user = request.user
-        profile.save()
-        return redirect('users:my-user')
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=user_profile)
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            return redirect('users:my-user')
+    else:
+        form = EditProfileForm(instance=user_profile)
     return render(request, "users/user/edit.html", dict(form=form))
