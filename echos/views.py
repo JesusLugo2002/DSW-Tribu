@@ -1,6 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from shared.utils import assert_owner_of
 
 from waves.forms import AddWaveForm
@@ -36,7 +36,7 @@ def echo_detail(request: HttpRequest, echo_pk: int) -> HttpResponse:
 
 
 @login_required
-def echo_waves(request, echo_pk):
+def echo_waves(request: HttpRequest, echo_pk: int) -> HttpResponse:
     echo = Echo.objects.get(pk=echo_pk)
     waves = echo.waves.all()
     return render(
@@ -48,31 +48,28 @@ def echo_waves(request, echo_pk):
 
 @login_required
 @assert_owner_of('echo')
-def echo_edit(request, echo_pk):
+def echo_edit(request: HttpRequest, echo_pk: int) -> HttpResponse | HttpResponseForbidden:
     echo = Echo.objects.get(pk=echo_pk)
     form = EditEchoForm(request.POST or None, instance=echo)
     if form.is_valid():
         echo = form.save()
-        return redirect('echos:echo-list')
+        return redirect(echo)
     return render(request, 'echos/echo/edit.html', dict(form=form))
 
 
 @login_required
 @assert_owner_of('echo')
-def echo_delete(request, echo_pk):
+def echo_delete(request: HttpRequest, echo_pk: int) -> HttpResponse | HttpResponseForbidden:
     echo = Echo.objects.get(pk=echo_pk)
     echo.delete()
     return redirect('echos:echo-list')
 
 
 @login_required
-def echo_wave_add(request, echo_pk):
-    form = AddWaveForm(request.POST or None)
+def echo_wave_add(request: HttpRequest, echo_pk: int) -> HttpResponse:
     echo = Echo.objects.get(pk=echo_pk)
+    form = AddWaveForm(request.user, echo, request.POST or None)
     if form.is_valid():
-        wave = form.save(commit=False)
-        wave.user = request.user
-        wave.echo = echo
-        wave.save()
-        return redirect('echos:echo-list')
+        wave = form.save()
+        return redirect(echo)
     return render(request, 'echos/echo/add-wave.html', dict(form=form))
