@@ -4,26 +4,23 @@
 
 {% block main %}
     <div class="d-flex justify-content-center">
-        <div id="echo-container" class="w-75 mt-3">
-            <h1>Echo created by <a href="#">{{ echo.user }}</a></h1>
+        <div id="echo-container" class="w-75 mt-3 container">
+            {% include "./detail-components/header.html" %}
             <hr>
-            <h5 class="text-secondary">Created at: {{ echo.created_at }}</h5>
+            <h5 class="text-secondary">Created at: {{ echo.created_at|date:'d M, Y'}}</h5>
             <p>{{ echo.content }}</p>
-            <h5 class="text-secondary">Waves: {{ waves.count }}</h5>
             <hr>
+            
             <div id="waves-container">
-                <h2 class="my-3">Waves</h2>
+                <div class="d-flex justify-content-between my-3">
+                    <h2>Waves</h2>
+                    <a class="btn btn-outline-primary fs-5" href="{% url 'echos:echo-wave-add' echo.pk %}">Add a wave</a> 
+                </div>
                 {% for wave in waves %}
-                    <div class="card m-2">
-                        <div class="card-header d-flex justify-content-between">
-                            <span>By: <a href="#" class="text-decoration-none">{{ wave.user }}</a></span>
-                            <span>Created at: {{ wave.created_at }}</span>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">{{ wave.content }}</p>
-                        </div>
-                    </div>
-                {% endfor %}               
+                    {% include "./detail-components/wave-card.html" %}
+                {% empty %}
+                    <p style="text-align: center;">No waves in this echo!</p>
+                {% endfor %}
             </div>
         </div>
     </div>
