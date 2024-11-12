@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 
+from shared.utils import assert_owner_of
 from .models import Profile
 from .forms import EditProfileForm
 
@@ -32,12 +33,12 @@ def user_echos(request: HttpRequest, username: str) -> HttpRequest:
 
 
 @login_required
-def my_user(request):
+def my_user(request: HttpRequest) -> HttpResponse:
     return redirect('users:user-detail', username=request.user)
 
 
 @login_required
-def user_edit(request, username):
+def user_edit(request: HttpRequest, username: str) -> HttpResponse | HttpResponseForbidden:
     if request.user.username != username:
         return HttpResponseForbidden("You can not edit another user profile!")
     user_profile = Profile.objects.get(user=request.user)

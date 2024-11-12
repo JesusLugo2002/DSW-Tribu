@@ -1,4 +1,5 @@
 from django.http import HttpResponseForbidden, HttpResponse
+from django.contrib.auth.models import User
 from echos.models import Echo
 from waves.models import Wave
 
@@ -12,7 +13,7 @@ def assert_owner_of(model: str):
                 case 'wave':
                     model_instance = Wave.objects.get(pk=kwargs['wave_pk'])
                 case _:
-                    return HttpResponse('ERROR: "assert_owner_of" decorator parameter not specified or specified wrongly! ("echo"|"wave").')
+                    return HttpResponse('ERROR: "assert_owner_of" decorator parameter not specified or specified wrongly! ("echo"|"wave"|"user").')
             if user != model_instance.user:
                 return HttpResponseForbidden("Only the owner can do that!")
             return func(*args, **kwargs)
