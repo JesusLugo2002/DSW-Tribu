@@ -12,7 +12,7 @@ class AddEchoForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.user = user
     
-    def save(self):
+    def save(self) -> Echo:
         echo = super().save(commit=False)
         echo.user = self.user
         echo = super().save()

@@ -3,12 +3,22 @@
 {% block title %}Editing wave | TRIBU{% endblock title %}
 
 {% block main %}
-<div class="container m-3">
-  <h1>Editing wave</h1>
-  <form method="post" novalidate>
-    {% csrf_token %}
-    {{ form }}
-    <input type="submit" value="Edit wave">
+<div class="container m-3 ">
+  <h1>Editing echo</h1>
+  <form method="POST" novalidate>
+  {% csrf_token %}
+
+    <div class="form-floating mt-3">
+      <textarea class="form-control" id="floatingInput" name="{{ form.content.html_name }}" max_length="{{ form.content.field.max_length }}" style="height: 250px;">{{ form.content.value }}</textarea>
+      {{ form.content.errors }}
+      <label for="floatingInput">Content</label>
+    </div>
+
+    <div class="mt-3">
+      <input type="submit" value="Edit wave" class="btn btn-primary">
+      <a href="{% url "echos:echo-list" %}" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+
   </form>
 </div>
 {% endblock main %}
