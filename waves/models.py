@@ -13,5 +13,5 @@ class Wave(models.Model):
     class Meta:
         ordering = ['-created_at']
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'Wave #{self.pk} by {self.user} linked to Echo #{self.echo.pk}'
