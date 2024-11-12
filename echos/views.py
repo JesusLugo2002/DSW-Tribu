@@ -27,7 +27,7 @@ def echo_add(request: HttpRequest) -> HttpResponse:
 
 @login_required
 def echo_detail(request: HttpRequest, echo_pk: int) -> HttpResponse:
-    echo = Echo.objects.get(pk=echo_pk)
+    echo = Echo.objects.get(pk=echo_pk) 
     waves = echo.waves.all()
     return render(
         request,
