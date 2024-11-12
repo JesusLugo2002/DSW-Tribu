@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
+from django.http import HttpRequest, HttpResponse
 from shared.utils import assert_owner_of
 
 from waves.forms import AddWaveForm
@@ -9,24 +10,22 @@ from .models import Echo
 
 
 @login_required
-def echos_list(request):
+def echos_list(request: HttpRequest) -> HttpResponse:
     echos = Echo.objects.all()
     return render(request, 'echos/list.html', dict(echos=echos))
 
 
 @login_required
-def echo_add(request):
-    form = AddEchoForm(request.POST or None)
+def echo_add(request: HttpRequest) -> HttpResponse:
+    form = AddEchoForm(request.user, request.POST or None)
     if form.is_valid():
-        echo = form.save(commit=False)
-        echo.user = request.user
-        echo.save()
-        return redirect('echos:echo-list')
+        echo = form.save()
+        return redirect(echo)
     return render(request, 'echos/add.html', dict(form=form))
 
 
 @login_required
-def echo_detail(request, echo_pk):
+def echo_detail(request: HttpRequest, echo_pk: int) -> HttpResponse:
     echo = Echo.objects.get(pk=echo_pk)
     waves = echo.waves.all()
     return render(
