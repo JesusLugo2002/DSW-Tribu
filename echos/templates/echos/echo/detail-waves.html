@@ -9,9 +9,6 @@
             {% include "./detail-components/body.html" %}
             <div id="waves-container">
                 {% include "./detail-components/wave-list.html" %}
-                {% if waves_quantity > 5 %}
-                    <a class="btn btn-primary my-3 w-100" href="{% url "echos:echo-waves" echo.pk %}">See more waves</a>
-                {% endif %}
             </div>
         </div>
     </div>

@@ -1,0 +1,9 @@
+<div class="d-flex justify-content-between my-3">
+    <h2>Waves</h2>
+    <a class="btn btn-outline-primary fs-5" href="{% url 'echos:echo-wave-add' echo.pk %}">Add a wave</a> 
+</div>
+{% for wave in waves %}
+    {% include "./wave-card.html" %}
+{% empty %}
+    <p style="text-align: center;">No waves in this echo!</p>
+{% endfor %}

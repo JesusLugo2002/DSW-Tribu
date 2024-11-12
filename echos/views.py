@@ -42,7 +42,7 @@ def echo_waves(request: HttpRequest, echo_pk: int) -> HttpResponse:
     waves = echo.waves.all()
     return render(
         request,
-        'echos/echo/waves.html',
+        'echos/echo/detail-waves.html',
         dict(echo=echo, waves=waves),
     )
 
