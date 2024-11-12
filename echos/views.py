@@ -1,12 +1,13 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
+
 from shared.utils import assert_owner_of
 
-from waves.forms import AddWaveForm
-
-from .forms import AddEchoForm, EditEchoForm
 from .models import Echo
+
+from waves.forms import AddWaveForm
+from .forms import AddEchoForm, EditEchoForm
 
 
 @login_required
