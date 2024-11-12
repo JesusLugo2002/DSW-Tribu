@@ -9,28 +9,22 @@
     
       <div class="collapse navbar-collapse" id="navbarCollapse">
         <ul class="navbar-nav me-auto mb-2 mb-md-0 text-body  ">
-          <li class="nav-item"><a href="{% url "echos:echo-list" %}" class="nav-link px-2 link-secondary">Echoes</a></li>
+          <li class="nav-item"><a href="{% url "echos:echo-list" %}" class="nav-link px-2 link-secondary">Echos</a></li>
           <li class="nav-item"><a href="{% url "users:user-list" %}" class="nav-link px-2 link-body-emphasis">Users</a></li>
         </ul>
-      {% if user.is_authenticated %}
-            <a class="btn btn-outline-primary mx-3" href="{% url "echos:echo-add" %}">Create an echo</a>
-    
-            <div class="dropdown text-end">
-              <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="{{ user.profile.avatar.url }}" alt="mdo" width="32" height="32" class="rounded-circle">
-              </a>
-              <ul class="dropdown-menu text-small">
-                <li><a class="dropdown-item" href="{% url "users:my-user" %}">My profile</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="{% url "logout" %}">Sign out</a></li>
-              </ul>
-            </div>
-          {% else %}
-          <div>
-            <a class="btn btn-outline-primary" href="{% url "login" %}">Log in</a>
-            <a class="btn btn-outline-primary" href="{% url "signup" %}">Sign up</a>
+      
+          <a class="btn btn-outline-primary mx-3" href="{% url "echos:echo-add" %}">Create an echo</a>
+  
+          <div class="dropdown text-end">
+            <a href="#" class="d-block link-body-emphasis text-decoration-none dropdown-toggle text-reset btn btn-outline-light" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="{{ user.profile.avatar.url }}" alt="mdo" width="32" height="32" class="rounded-circle">
+            </a>
+            <ul class="dropdown-menu text-small">
+              <li><a class="dropdown-item" href="{% url "users:my-user" %}">My profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="{% url "logout" %}">Sign out</a></li>
+            </ul>
           </div>
-          {% endif %}
       </div>
     </div>
   </nav>
