@@ -29,12 +29,10 @@ def echo_add(request):
 def echo_detail(request, echo_pk):
     echo = Echo.objects.get(pk=echo_pk)
     waves = echo.waves.all()
-    last_waves = waves[:5]
-    waves_quantity = len(waves)
     return render(
         request,
         'echos/echo/detail.html',
-        dict(echo=echo, waves=last_waves, waves_quantity=waves_quantity),
+        dict(echo=echo, waves=waves[:5], waves_quantity=len(waves)),
     )
 
 
