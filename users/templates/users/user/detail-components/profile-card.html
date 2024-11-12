@@ -1,13 +1,13 @@
 <div class="row">
     <div class="col-3 d-flex justify-content-center">
-        <img class="rounded-circle" src="{{ other_user.profile.avatar.url }}" width="200">
+        <img class="rounded-circle" src="{{ detailed_user.profile.avatar.url }}" width="200">
     </div>
     <div class="col-9">
         <div class="row">
             <div class="col-11">
-                <h1>{{ other_user }}</h1>
+                <h1>{{ detailed_user }}</h1>
             </div>
-            {% if other_user.pk == user.pk %}
+            {% if detailed_user.pk == user.pk %}
                 <div class="col">
                     <a href="{% url "users:user-edit" user.username %}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-gear-fill" viewBox="0 0 16 16">
@@ -18,10 +18,10 @@
             {% endif %}
         </div>
         <div class="row">
-            <h5 class="text-secondary">{{ other_user.email }}</h5>
+            <h5 class="text-secondary">{{ detailed_user.email }}</h5>
         </div>
         <div class="row">
-            <p class="mt-2" style="text-align: justify;">{{ other_user.profile.bio }}</p>
+            <p class="mt-2" style="text-align: justify;">{{ detailed_user.profile.bio }}</p>
         </div>
     </div>
 </div>

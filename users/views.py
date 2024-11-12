@@ -1,34 +1,34 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.shortcuts import redirect, render
-from django.http import HttpResponseForbidden
+from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 
 from .models import Profile
 from .forms import EditProfileForm
 
 
 @login_required
-def user_list(request):
+def user_list(request: HttpRequest) -> HttpResponse:
     users = User.objects.all().order_by('username')
     return render(request, 'users/list.html', dict(users=users))
 
 
 @login_required
-def user_detail(request, username):
-    other_user = User.objects.get(username=username)
-    echos = other_user.echos.all()
+def user_detail(request: HttpRequest, username: str) -> HttpResponse:   
+    detailed_user = User.objects.get(username=username)
+    echos = detailed_user.echos.all()
     return render(
         request,
         'users/user/detail.html',
-        dict(other_user=other_user, echos=echos[:5], echos_quantity=echos.count()),
+        dict(detailed_user=detailed_user, echos=echos[:5], echos_quantity=len(echos)),
     )
 
 
 @login_required
-def user_echos(request, username):
-    other_user = User.objects.get(username=username)
-    echos = other_user.echos.all()
-    return render(request, 'users/user/echos.html', dict(other_user=other_user, echos=echos))
+def user_echos(request: HttpRequest, username: str) -> HttpRequest:
+    detailed_user = User.objects.get(username=username)
+    echos = detailed_user.echos.all()
+    return render(request, 'users/user/detail-echos.html', dict(detailed_user=detailed_user, echos=echos))
 
 
 @login_required

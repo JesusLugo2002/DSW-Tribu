@@ -7,9 +7,23 @@
     <ul class="list-group list-group-flush mb-5">
         {% for user in users %}
         <a class="list-group-item list-group-item-action" href="{% url "users:user-detail" user %}">
-            <div>
-                <img class="rounded-circle" src="{{ user.profile.avatar.url }}" width="32" class="mx-3">
-                {{ user }}
+            <div class="row">
+                <div class="col-4 d-flex align-items-center">
+                    <img class="rounded-circle" src="{{ user.profile.avatar.url }}" width="48" class="mx-3">
+                    <span class="mx-3">{{ user }}</span>
+                </div>
+                <div class="col-4 d-flex align-items-center">
+                    <i class="bi bi-envelope mx-1"></i>
+                    <span class="mx-1">{{ user.email }}</span>
+                </div>
+                <div class="col-4 text-end">
+                    <div>
+                        {{ user.echos.count }} <i class="bi bi-feather2"></i>
+                    </div>
+                    <div>
+                        {{ user.waves.count }} <i class="bi bi-chat-left-dots-fill"></i>
+                    </div>    
+                </div>
             </div>
         </a>
     {% endfor %}

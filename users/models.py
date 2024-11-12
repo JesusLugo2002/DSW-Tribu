@@ -13,3 +13,6 @@ class Profile(models.Model):
         default='avatars/noavatar.png'
     )
     bio = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['user']
