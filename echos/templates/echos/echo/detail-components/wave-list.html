@@ -5,5 +5,5 @@
 {% for wave in waves %}
     {% include "./wave-card.html" %}
 {% empty %}
-    <p style="text-align: center;">No waves in this echo!</p>
+    <p style="text-align: center;">No waves in this echo. <a class="text-decoration-none" href="{% url "echos:echo-wave-add" echo.pk %}">Create the first one!</a></p>
 {% endfor %}

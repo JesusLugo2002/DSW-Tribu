@@ -20,7 +20,7 @@ def user_detail(request: HttpRequest, username: str) -> HttpResponse:
     return render(
         request,
         'users/user/detail.html',
-        dict(detailed_user=detailed_user, echos=echos[:5], echos_quantity=len(echos)),
+        dict(detailed_user=detailed_user, echos=echos[:5], echos_quantity=echos.count()),
     )
 
 
