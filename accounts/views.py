@@ -30,7 +30,6 @@ def user_signup(request):
         return redirect('echos:echo-list')
     return render(request, 'accounts/signup.html', dict(form=form))
 
-
 def user_logout(request):
     logout(request)
     return redirect('login')
