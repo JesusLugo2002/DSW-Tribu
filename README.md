@@ -1,6 +1,6 @@
 <div align=justify>
 
-# TRIBU
+# :herb: TRIBU
 
 A compact and lightweight social network called TRIBU that replace posts with **Echos** and the comments with **Waves**. Similar to Twitter app.
 
@@ -39,6 +39,29 @@ I learned how use the forms classes provided by Django to speed up the process o
 
 ## :eyes: Demostration
 
+<div align=center>
+
+![homepage](docs/assets/homepage.png)
+
+*Homepage*
+
+![create echo form](docs/assets/create-echo-form.png)
+
+*Echo creation form*
+
+![profile](docs/assets/profile.png)
+
+*Profile view*
+
+![edit user form](docs/assets/edit-user-form.png)
+
+*Edit user form*
+
+![echo view](docs/assets/echo-view.png)
+
+*Echo view*
+
+</div>
 
 
 ## :question: How run this app?
